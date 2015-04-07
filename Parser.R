@@ -1,3 +1,10 @@
+####################################################################
+# 1_purity_ploidy
+####################################################################
+#' Read in the purity/ploidy table
+parse.purity.ploidy = function(infile) {
+  return(read.table(infile, header=T, stringsAsFactors=F))
+}
 
 ####################################################################
 # 2_mutation_assignments
