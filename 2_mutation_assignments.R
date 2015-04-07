@@ -30,7 +30,7 @@ get.mut.assigned.by.who = function(master_table, list_of_tables, vector_of_names
 
 master_table = vanloo_wedge[,c(1,2)]
 assignment_overview = get.mut.assigned.by.who(master_table, list_of_tables, vector_of_names)
-write.table(assignment_overview, paste("tables/", samplename, "_mutation_assignment_inventory.tsv", sep=""), sep="\t", quote=F, row.names=F)
+write.table(assignment_overview, paste("2_mutation_assignments/tables/", samplename, "_mutation_assignment_inventory.tsv", sep=""), sep="\t", quote=F, row.names=F)
 
 #######################################################################
 # Synchronise mutation assignment tables
@@ -107,7 +107,7 @@ for (i in 1:length(vector_of_names)) {
 }
 diff.mse.d = data.frame(diff.mse)
 colnames(diff.mse.d) = vector_of_names
-write.table(diff.mse.d, file=paste("similarities/", samplename, ".mse.txt", sep=""), sep="\t", row.names=F, quote=F)
+write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", samplename, ".mse.txt", sep=""), sep="\t", row.names=F, quote=F)
 
 
 #######################################################################
@@ -134,7 +134,7 @@ for (i in 2:length(dat.shared)) {
   most.likely.node.assignments = cbind(most.likely.node.assignments, apply(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)], 1, which.max))
 }
 colnames(most.likely.node.assignments) = c("chr", "pos", vector_of_names)
-write.table(most.likely.node.assignments, file=paste("tables/", samplename, "_most_likely_node_assignments.tsv", sep=""), sep="\t", col.names=T, quote=F, row.names=F)
+write.table(most.likely.node.assignments, file=paste("2_mutation_assignments/tables/", samplename, "_most_likely_node_assignments.tsv", sep=""), sep="\t", col.names=T, quote=F, row.names=F)
 
 #######################################################################
 # Obtain cluster locations by taking the mean Subclonal fraction of its assigned mutations
@@ -164,7 +164,7 @@ get.cluster.locations.shared.muts = function(dat.shared, vector_of_names) {
 cluster.locations = get.cluster.locations.shared.muts(dat.shared, vector_of_names)
 for (i in 1:length(vector_of_names)) {
   if (!is.null(cluster.locations[[i]])) {
-    write.table(file=paste("tables/", samplename, "_cluster_locations_shared_", vector_of_names[i], ".txt", sep=""), cluster.locations[[i]], row.names=F, quote=F, sep="\t")
+    write.table(file=paste("2_mutation_assignments/tables/", samplename, "_cluster_locations_shared_", vector_of_names[i], ".txt", sep=""), cluster.locations[[i]], row.names=F, quote=F, sep="\t")
   }
 }
 
@@ -191,6 +191,6 @@ get.cluster.locations.all.muts = function(list_of_tables, raw.data, vector_of_na
 cluster.locations = get.cluster.locations.all.muts(list_of_tables, d, vector_of_names)
 for (i in 1:length(vector_of_names)) {
   if (!is.null(cluster.locations[[i]])) {
-    write.table(file=paste("tables/", samplename, "_cluster_locations_all_", vector_of_names[i], ".txt", sep=""), cluster.locations[[i]], row.names=F, quote=F, sep="\t")
+    write.table(file=paste("2_mutation_assignments/tables/", samplename, "_cluster_locations_all_", vector_of_names[i], ".txt", sep=""), cluster.locations[[i]], row.names=F, quote=F, sep="\t")
   }
 }
