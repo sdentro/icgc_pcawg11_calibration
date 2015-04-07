@@ -23,7 +23,9 @@ create.purity.table = function(list_of_tables, vector_of_names) {
     purity = rbind(purity, new.rows)
   }
   colnames(purity) = c("sample", vector_of_names)
-  return(purity[order(purity$sample),])
+  purity = purity[order(purity$sample),]
+  row.names(purity) = 1:nrow(purity)
+  return(purity)
 }
 
 #' Create a ploidy overview table, inserting NAs where ploidy was not reported
@@ -43,10 +45,21 @@ create.ploidy.table = function(list_of_tables, vector_of_names) {
     ploidy = rbind(ploidy, new.rows)
   }
   colnames(ploidy) = c("sample", vector_of_names)
-  return(ploidy[order(ploidy$sample),])
+  ploidy = ploidy[order(ploidy$sample),]
+  row.names(ploidy) = 1:nrow(ploidy)
+  return(ploidy)
 }
 
+#######################################################################
+# Create tables
+#######################################################################
 purity = create.purity.table(list_of_tables, vector_of_names)
 write.table(purity, "1_purity_ploidy/purity.tsv", sep="\t", quote=F, row.names=F)
 ploidy = create.ploidy.table(list_of_tables, vector_of_names)
 write.table(ploidy, "1_purity_ploidy/ploidy.tsv", sep="\t", quote=F, row.names=F)
+
+#######################################################################
+# Create heatmaps
+#######################################################################
+plot.purity.heatmap(purity[,c(2,3)], "1_purity_ploidy/purity.png", "Purity")
+plot.purity.heatmap(ploidy[,c(2,3)], "1_purity_ploidy/ploidy.png", "Ploidy")
