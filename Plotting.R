@@ -1,9 +1,10 @@
 ####################################################################
 # 1_purity_ploidy
 ####################################################################
-library(ggplot2)
-library(reshape2)
+
 plot.purity.heatmap = function(purity, pngfilename, title) {
+  library(ggplot2)
+  library(reshape2)
   purity.m = melt(data.matrix(purity))
   p = ggplot(purity.m) + 
     aes(Var2, Var1) + 
@@ -26,7 +27,6 @@ library(RColorBrewer)
 #' Plot the heatmap associated with the identity array
 plotHeatmapFull = function(identity.array, outfilename) {
   no.muts = nrow(identity.array)
-  # Plot every 10th point to speed up plotting
   png(outfilename)
   heatmap(identity.array, Rowv=NA, Colv=NA, scale="none")
   dev.off()

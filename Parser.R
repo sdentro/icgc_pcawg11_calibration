@@ -44,6 +44,26 @@ parse.mut.assignments = function(infile) {
   return(read.table(infile, header=T, stringsAsFactors=F))
 }
 
+parse.mut.assignments.peifer = function(assignment_file, clusters_file) {
+  d = read.table(assignment_file, header=T, stringsAsFactors=F)
+  clust = read.table(clusters_file, header=T)
+  no.clust = nrow(clust)
+  
+  output = as.data.frame(matrix(0, nrow=nrow(d), ncol=2+no.clust))
+  for (i in 1:nrow(d)) {
+    # Save chromosome and position
+    output[i,1] = d[i,2]
+    output[i,2] = d[i,3]
+    # Set prob of assigning this mut to the cluster mentioned in the input to 2
+    # Adding 1 to cluster id as numbering starts at 0
+    # Adding another 2 to skip the chromosome and position columns
+    output[i,d[i,8]+1+2] = 1
+  }
+  # Strip off the chr
+  output[,1] = gsub("chr", "", output[,1])
+  return(output)
+}
+
 ####################################################################
 # 3_tree_structures
 ####################################################################

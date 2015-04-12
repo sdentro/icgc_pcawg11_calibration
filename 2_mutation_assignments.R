@@ -1,15 +1,25 @@
+args = commandArgs(TRUE)
+
+morris_file = toString(args[1])
+vanloo_wedge_file = toString(args[2])
+peifer_file_assignments = toString(args[3])
+peifer_file_clusters = toString(args[4])
+
 source("Parser.R")
 source("Plotting.R")
 
-samplename = "0c7af04b-e171-47c4-8be5-5db33f20148e"
-morris_file = "data/morris/mutation_assignment/mutation_assignment.all.0c7af04b-e171-47c4-8be5-5db33f20148e.csv"
-vanloo_wedge_file = "data/vanloo_wedge/2_clustering/0c7af04b-e171-47c4-8be5-5db33f20148e/0c7af04b-e171-47c4-8be5-5db33f20148e_cluster_membership.txt"
+# samplename = "0c7af04b-e171-47c4-8be5-5db33f20148e"
+# morris_file = "data/morris/mutation_assignment/mutation_assignment.all.0c7af04b-e171-47c4-8be5-5db33f20148e.csv"
+# vanloo_wedge_file = "data/vanloo_wedge/2_clustering/0c7af04b-e171-47c4-8be5-5db33f20148e/0c7af04b-e171-47c4-8be5-5db33f20148e_cluster_membership.txt"
+# peifer_file_assignments = "data/peifer/Mutation_Clustering/KICH_0c7af04b_cluster_assignments.txt"
+# peifer_file_clusters = "data/peifer/Mutation_Clustering/KICH_0c7af04b_mclusters.txt"
 
 morris = parse.mut.assignments(morris_file)
 vanloo_wedge = parse.mut.assignments(vanloo_wedge_file)
+peifer = parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters)
 
-vector_of_names = c("morris", "vanloo_wedge")
-list_of_tables = list(morris, vanloo_wedge)
+vector_of_names = c("morris", "vanloo_wedge", "peifer")
+list_of_tables = list(morris, vanloo_wedge, peifer)
 
 #######################################################################
 # Get which mutations were assigned by whome
@@ -66,7 +76,7 @@ sync.assignments = function(assignment.tables, raw.data, selection, vector_of_na
 }
 
 #' Calculate the identity matrix for all methods
-calc.ident.matrices = function(dat.shared, vector_of_names) {
+calc.ident.matrices = function(dat.shared, vector_of_names, useprobs=T) {
   ident.matrices = list()
   for (i in 1:length(vector_of_names)) {
     if (nrow(dat.shared[[i]]) == 0) {
@@ -74,7 +84,13 @@ calc.ident.matrices = function(dat.shared, vector_of_names) {
       ident.matrices[[i]] = NULL
     } else {
       #ident.matrices[[i]] = GetIdentityArrayFromAssignments(dat.shared[[i]]$Cluster)
-      ident.matrices[[i]] = GetIdentityArrayFromProbabilities(as.matrix(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)]))
+      if (useprobs) {
+        # Select the columns from dat.shared (no chr/pos and CCF)
+        ident.matrices[[i]] = GetIdentityArrayFromProbabilities(as.matrix(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)]))
+      } else {
+        most.likely.node.assignments = apply(dat.shared[[i]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
+        ident.matrices[[i]] = GetIdentityArrayFromAssignments(most.likely.node.assignments)
+      }
     }
   }
   return(ident.matrices)
@@ -90,16 +106,18 @@ sel = mutation.assigned.by.all(list_of_tables, d, vector_of_names)
 dat.shared = sync.assignments(list_of_tables, d, sel, vector_of_names)
 
 # Calculate the identity matrix
-ident.matrices = calc.ident.matrices(dat.shared, vector_of_names)
+ident.matrices.probs = calc.ident.matrices(dat.shared, vector_of_names, useprobs=T)
+ident.matrices.noprobs = calc.ident.matrices(dat.shared, vector_of_names, useprobs=F)
 
 #######################################################################
 # Calculate similarities between each pair of matrices
 #######################################################################
+# Probs
 diff.mse = matrix(0, length(vector_of_names), length(vector_of_names))
 for (i in 1:length(vector_of_names)) {
   for (j in i:length(vector_of_names)) {
-    if (!is.null(ident.matrices[[i]]) & !is.null(ident.matrices[[j]])) {
-      diff.mse[i, j] = mean((ident.matrices[[i]] - ident.matrices[[j]])^2)
+    if (!is.null(ident.matrices.probs[[i]]) & !is.null(ident.matrices.probs[[j]])) {
+      diff.mse[i, j] = mean((ident.matrices.probs[[i]] - ident.matrices.probs[[j]])^2)
     } else {
       diff.mse[i, j] = NA
     }
@@ -107,21 +125,49 @@ for (i in 1:length(vector_of_names)) {
 }
 diff.mse.d = data.frame(diff.mse)
 colnames(diff.mse.d) = vector_of_names
-write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", samplename, ".mse.txt", sep=""), sep="\t", row.names=F, quote=F)
+write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", samplename, "_probs.mse.txt", sep=""), sep="\t", row.names=F, quote=F)
 
+# No probs
+diff.mse = matrix(0, length(vector_of_names), length(vector_of_names))
+for (i in 1:length(vector_of_names)) {
+  for (j in i:length(vector_of_names)) {
+    if (!is.null(ident.matrices.noprobs[[i]]) & !is.null(ident.matrices.noprobs[[j]])) {
+      diff.mse[i, j] = mean((ident.matrices.noprobs[[i]] - ident.matrices.noprobs[[j]])^2)
+    } else {
+      diff.mse[i, j] = NA
+    }
+  }
+}
+diff.mse.d = data.frame(diff.mse)
+colnames(diff.mse.d) = vector_of_names
+write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", samplename, "_noprobs.mse.txt", sep=""), sep="\t", row.names=F, quote=F)
 
 #######################################################################
 # Plot a heatmap with data ordered according to the first method
 #######################################################################
 most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
 ord = order(most.likely.node.assignments)
+
+# No probabilities
 for (i in 1:length(vector_of_names)) {
   # Only plot heatmap when there is a matrix, i.e. when a method has produced mutation assignments for this sample
-  if (!is.null(ident.matrices[[i]])) {
-    if (nrow(ident.matrices[[i]]) < 10000) {
-      plotHeatmapFull(ident.matrices[[i]][ord,ord], paste("figures/", samplename, "_", vector_of_names[i], ".png", sep=""))
+  if (!is.null(ident.matrices.noprobs[[i]])) {
+    if (nrow(ident.matrices.noprobs[[i]]) < 10000) {
+      plotHeatmapFull(ident.matrices.noprobs[[i]][ord,ord], paste("2_mutation_assignments/figures/", samplename, "_", vector_of_names[i], "_noprobs.png", sep=""))
     } else {
-      plotHeatmapMedium(ident.matrices[[i]][ord,ord], paste("figures/", samplename, "_", vector_of_names[i], ".png", sep=""))
+      plotHeatmapMedium(ident.matrices.noprobs[[i]][ord,ord], paste("2_mutation_assignments/figures/", samplename, "_", vector_of_names[i], "_noprobs.png", sep=""))
+    }
+  }
+}
+
+# Probabilities
+for (i in 1:length(vector_of_names)) {
+  # Only plot heatmap when there is a matrix, i.e. when a method has produced mutation assignments for this sample
+  if (!is.null(ident.matrices.probs[[i]])) {
+    if (nrow(ident.matrices.probs[[i]]) < 10000) {
+      plotHeatmapFull(ident.matrices.probs[[i]][ord,ord], paste("2_mutation_assignments/figures/", samplename, "_", vector_of_names[i], "_probs.png", sep=""))
+    } else {
+      plotHeatmapMedium(ident.matrices.probs[[i]][ord,ord], paste("2_mutation_assignments/figures/", samplename, "_", vector_of_names[i], "_probs.png", sep=""))
     }
   }
 }
