@@ -89,3 +89,27 @@ sparse.input.to.Matrix = function(infile, no.muts) {
   data = read.table(infile, header=T, stringsAsFactors=F)
   return(sparseMatrix(data$row, data$col, x=data$value, dims=c(no.muts, no.muts)))
 }
+
+####################################################################
+# 4_copy_number
+####################################################################
+parse.cn = function(infile) {
+  return(read.table(infile, header=T, stringsAsFactors=F))
+}
+
+parse.cn.peifer = function(infile) {
+  d = read.table(infile, header=T, stringsAsFactors=F)
+  d = d[,c("Chromosome", "Start", "End", "CopyNr", "A", "B")]
+  d$Chromosome = gsub("chr", "", d$Chromosome)
+  return(d)
+}
+
+load.baf = function(baf.file) {
+  return(read.table(baf.file, stringsAsFactors=F))
+}
+
+load.logr = function(logr.file) {
+  lr = read.table(logr.file, stringsAsFactors=F)
+  colnames(lr) = c("Chromosome", "Position", "LogR")
+  return(lr)
+}

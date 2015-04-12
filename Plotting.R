@@ -40,3 +40,22 @@ plotHeatmapMedium = function(identity.array, outfilename) {
   heatmap(identity.array[seq(10,no.muts,10),seq(10,no.muts,10)], Rowv=NA, Colv=NA, scale="none")
   dev.off()
 }
+
+####################################################################
+# 4_copy_number
+####################################################################
+getIdeogram = function(chromosome) {
+  return(plotIdeogram(hg19IdeogramCyto, subchr=paste("chr",chromosome, sep=""), color="black", alpha=0.0))
+}
+
+create.segs.track = function(data, start_colname, end_colname, max_colname, min_colname) {
+  if (nrow(data) > 0) {
+    p = ggplot(data) + 
+      geom_segment(mapping=aes_string(x=start_colname, xend=end_colname, y=max_colname, yend=max_colname), colour="purple", size=4) + 
+      geom_segment(mapping=aes_string(x=start_colname, xend=end_colname, y=min_colname, yend=min_colname), colour="darkblue", size=4) + 
+      ylim(0, 8)
+  } else {
+    p = ggplot(data) + ylim(0, 8)
+  }
+  return(p)
+}
