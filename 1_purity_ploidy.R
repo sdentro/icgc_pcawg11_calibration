@@ -1,10 +1,12 @@
 morris_file = "data/morris/purity_ploidy.txt"
 vanloo_wedge_file = "data/vanloo_wedge/1_purity_ploidy/purity_ploidy.txt"
+peifer_file = "data/peifer/Purity_Ploidy/ICGC_Pilot63_Purity_Ploidy.txt"
 
 morris = parse.purity.ploidy(morris_file)
 vanloo_wedge = parse.purity.ploidy(vanloo_wedge_file)
-list_of_tables = list(morris, vanloo_wedge)
-vector_of_names = c("morris", "vanloo_wedge")
+peifer = parse.purity.ploidy.peifer(peifer_file, vanloo_wedge$sample)
+list_of_tables = list(morris, vanloo_wedge, peifer)
+vector_of_names = c("morris", "vanloo_wedge", "peifer")
 
 #' Convert a list of tables into a matrix with purity estimates only, placing NAs where a group has not reported anything
 create.purity.table = function(list_of_tables, vector_of_names) {
@@ -61,5 +63,5 @@ write.table(ploidy, "1_purity_ploidy/ploidy.tsv", sep="\t", quote=F, row.names=F
 #######################################################################
 # Create heatmaps
 #######################################################################
-plot.purity.heatmap(purity[,c(2,3)], "1_purity_ploidy/purity.png", "Purity")
-plot.purity.heatmap(ploidy[,c(2,3)], "1_purity_ploidy/ploidy.png", "Ploidy")
+plot.purity.heatmap(purity[,-1], "1_purity_ploidy/purity.png", "Purity")
+plot.purity.heatmap(ploidy[,-1], "1_purity_ploidy/ploidy.png", "Ploidy")

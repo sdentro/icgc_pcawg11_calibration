@@ -6,6 +6,28 @@ parse.purity.ploidy = function(infile) {
   return(read.table(infile, header=T, stringsAsFactors=F))
 }
 
+parse.purity.ploidy.peifer = function(infile, vector_of_samplenames) {
+  d = read.table(infile, header=T, stringsAsFactors=F)
+  for (i in 1:nrow(d)) {
+    sampleid = unlist(strsplit(d$Sample[i], "_"))[2]
+    
+    selection = grepl(sampleid, vector_of_samplenames)
+    if (sum(selection) != 1) {
+      if (sampleid == "31f02f48") {
+        d[i,1] = "31f02f48-44a4-445e-ac3d-e9bf3d8d25a2"
+      } else if (sampleid == "f9c39eb7") {
+        d[i,1] = "f9c39eb7-39a9-6626-e040-11ac0d4870c2"
+      } else {
+        print(paste("Found previously unknown sample that is not captured here:", sampleid))
+      }
+    } else {
+      d[i,1] = purity$sample[grepl(sampleid, purity$sample)]
+    }
+  }
+  colnames(d) = c("sample", "purity", "ploidy")
+  return(d)
+}
+
 ####################################################################
 # 2_mutation_assignments
 ####################################################################
