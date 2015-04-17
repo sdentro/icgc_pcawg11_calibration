@@ -1,25 +1,33 @@
 args = commandArgs(TRUE)
 
-morris_file = toString(args[1])
-vanloo_wedge_file = toString(args[2])
-peifer_file_assignments = toString(args[3])
-peifer_file_clusters = toString(args[4])
-
-source("Parser.R")
-source("Plotting.R")
-
 # samplename = "0c7af04b-e171-47c4-8be5-5db33f20148e"
 # morris_file = "data/morris/mutation_assignment/mutation_assignment.all.0c7af04b-e171-47c4-8be5-5db33f20148e.csv"
 # vanloo_wedge_file = "data/vanloo_wedge/2_clustering/0c7af04b-e171-47c4-8be5-5db33f20148e/0c7af04b-e171-47c4-8be5-5db33f20148e_cluster_membership.txt"
 # peifer_file_assignments = "data/peifer/Mutation_Clustering/KICH_0c7af04b_cluster_assignments.txt"
 # peifer_file_clusters = "data/peifer/Mutation_Clustering/KICH_0c7af04b_mclusters.txt"
 
-morris = parse.mut.assignments(morris_file)
+morris_file = toString(args[1])
+vanloo_wedge_file = toString(args[2])
+peifer_file_assignments = toString(args[3])
+peifer_file_clusters = toString(args[4])
+
+samplename = unlist(strsplit(vanloo_wedge_file, "/"))
+samplename = unlist(strsplit(samplename[length(samplename)], "_"))[1]
+
+source("code/Parser.R")
+source("code/Plotting.R")
+source("code/ArrayAnalysis.R")
+
+
+#morris = parse.mut.assignments(morris_file)
 vanloo_wedge = parse.mut.assignments(vanloo_wedge_file)
 peifer = parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters)
 
-vector_of_names = c("morris", "vanloo_wedge", "peifer")
-list_of_tables = list(morris, vanloo_wedge, peifer)
+#vector_of_names = c("morris", "vanloo_wedge", "peifer")
+#list_of_tables = list(morris, vanloo_wedge, peifer)
+
+vector_of_names = c("vanloo_wedge", "peifer")
+list_of_tables = list(vanloo_wedge, peifer)
 
 #######################################################################
 # Get which mutations were assigned by whome
@@ -88,7 +96,7 @@ calc.ident.matrices = function(dat.shared, vector_of_names, useprobs=T) {
         # Select the columns from dat.shared (no chr/pos and CCF)
         ident.matrices[[i]] = GetIdentityArrayFromProbabilities(as.matrix(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)]))
       } else {
-        most.likely.node.assignments = apply(dat.shared[[i]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
+        most.likely.node.assignments = unlist(apply(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)], 1, which.max))
         ident.matrices[[i]] = GetIdentityArrayFromAssignments(most.likely.node.assignments)
       }
     }
