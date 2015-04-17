@@ -41,7 +41,9 @@ parse.dp.input = function(infile) {
 
 #' Parse a mutation assignment file
 parse.mut.assignments = function(infile) {
-  return(read.table(infile, header=T, stringsAsFactors=F))
+  d = read.table(infile, header=T, stringsAsFactors=F)
+  d = na.omit(d)
+  return(d)
 }
 
 parse.mut.assignments.peifer = function(assignment_file, clusters_file) {
