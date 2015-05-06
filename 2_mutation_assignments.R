@@ -20,11 +20,10 @@ source("code/Parser.R")
 source("code/Plotting.R")
 source("code/ArrayAnalysis.R")
 
-
-morris = parse.mut.assignments(morris_file)
-vanloo_wedge = parse.mut.assignments(vanloo_wedge_file)
-peifer = parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters)
-sahinalp = parse.mut.assignments(sahinalp_file)
+morris = ifelse(file.exists(morris_file), parse.mut.assignments(morris_file), NULL)
+vanloo_wedge = ifelse(file.exists(vanloo_wedge_file), parse.mut.assignments(vanloo_wedge_file), NULL)
+peifer = ifelse(file.exists(peifer_file_assignments), parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters), NULL)
+sahinalp = ifelse(file.exists(sahinalp_file), parse.mut.assignments(sahinalp_file), NULL)
 
 vector_of_names = c("morris", "vanloo_wedge", "peifer", "sahinalp")
 list_of_tables = list(morris, vanloo_wedge, peifer, sahinalp)
@@ -154,10 +153,15 @@ colnames(diff.mse.d) = vector_of_names
 write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", samplename, "_noprobs.mse.txt", sep=""), sep="\t", row.names=F, quote=F)
 
 #######################################################################
-# Plot a heatmap with data ordered according to the first method
+# Plot a heatmap with data ordered according to the first method, if no results use the second
 #######################################################################
-most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
-ord = order(most.likely.node.assignments)
+if (!is.null(dat.shared[[1]])) {
+  most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
+  ord = order(most.likely.node.assignments)
+} else {
+  most.likely.node.assignments = apply(dat.shared[[2]][,3:(ncol(dat.shared[[2]])-1)], 1, which.max)
+  ord = order(most.likely.node.assignments)
+}
 
 # No probabilities
 for (i in 1:length(vector_of_names)) {
