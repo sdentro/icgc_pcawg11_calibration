@@ -3,6 +3,9 @@ vanloo_wedge_file = "data/vanloo_wedge/1_purity_ploidy/purity_ploidy.txt"
 peifer_file = "data/peifer/Purity_Ploidy/ICGC_Pilot63_Purity_Ploidy.txt"
 sahinalp_file = "data/sahinalp/citup_pilot63/citup_purity_ploidy_v1.txt"
 
+source("code/Parser.R")
+source("code/Plotting.R")
+
 morris = parse.purity.ploidy(morris_file)
 vanloo_wedge = parse.purity.ploidy(vanloo_wedge_file)
 peifer = parse.purity.ploidy.peifer(peifer_file, vanloo_wedge$sample)
@@ -10,6 +13,7 @@ sahinalp = parse.purity.ploidy(sahinalp_file)
 # Replace 0 with NA
 sahinalp$ploidy = rep(NA, nrow(sahinalp))
 list_of_tables = list(morris, vanloo_wedge, peifer, sahinalp)
+print(length(list_of_tables))
 vector_of_names = c("morris", "vanloo_wedge", "peifer", "sahinalp")
 
 #' Convert a list of tables into a matrix with purity estimates only, placing NAs where a group has not reported anything

@@ -21,7 +21,7 @@ parse.purity.ploidy.peifer = function(infile, vector_of_samplenames) {
         print(paste("Found previously unknown sample that is not captured here:", sampleid))
       }
     } else {
-      d[i,1] = purity$sample[grepl(sampleid, purity$sample)]
+      d[i,1] = vector_of_samplenames[grepl(sampleid, vector_of_samplenames)]
     }
   }
   colnames(d) = c("sample", "purity", "ploidy")
