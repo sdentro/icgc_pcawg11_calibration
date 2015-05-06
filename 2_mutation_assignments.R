@@ -48,7 +48,12 @@ get.mut.assigned.by.who = function(master_table, list_of_tables, vector_of_names
   return(master_table)
 }
 
-master_table = vanloo_wedge[,c(1,2)]
+# Use this as the master table, the next step will only report mutations mentioned in this table
+if(!is.null(vanloo_wedge)) {
+  master_table = vanloo_wedge[,c(1,2)]
+} else {
+  master_table = peifer[,c(1,2)]
+}
 assignment_overview = get.mut.assigned.by.who(master_table, list_of_tables, vector_of_names)
 write.table(assignment_overview, paste("2_mutation_assignments/tables/", samplename, "_mutation_assignment_inventory.tsv", sep=""), sep="\t", quote=F, row.names=F)
 
