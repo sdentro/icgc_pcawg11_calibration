@@ -13,7 +13,6 @@ sahinalp = parse.purity.ploidy(sahinalp_file)
 # Replace 0 with NA
 sahinalp$ploidy = rep(NA, nrow(sahinalp))
 list_of_tables = list(morris, vanloo_wedge, peifer, sahinalp)
-print(length(list_of_tables))
 vector_of_names = c("morris", "vanloo_wedge", "peifer", "sahinalp")
 
 #' Convert a list of tables into a matrix with purity estimates only, placing NAs where a group has not reported anything
@@ -71,5 +70,15 @@ write.table(ploidy, "1_purity_ploidy/ploidy.tsv", sep="\t", quote=F, row.names=F
 #######################################################################
 # Create heatmaps
 #######################################################################
-plot.purity.heatmap(purity[,-1], "1_purity_ploidy/purity.png", "Purity")
-plot.purity.heatmap(ploidy[,-1], "1_purity_ploidy/ploidy.png", "Ploidy")
+plot.purity.heatmap(purity, "1_purity_ploidy/purity.png", "Purity")
+plot.purity.heatmap(ploidy, "1_purity_ploidy/ploidy.png", "Ploidy")
+
+#######################################################################
+# Create heatmap ploidy without outliers
+#######################################################################
+ploidy.no.outliers = ploidy[,2:ncol(ploidy)]
+ploidy.no.outliers = apply(ploidy.no.outliers, 2, as.numeric)
+ploidy.no.outliers[ploidy.no.outliers > 4.5] = NA
+ploidy.no.outliers = data.frame(ploidy$sample, ploidy.no.outliers)
+colnames(ploidy.no.outliers)[1] = "sample"
+plot.purity.heatmap(ploidy.no.outliers, "1_purity_ploidy/ploidy_no_outliers.png", "Ploidy")
