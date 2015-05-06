@@ -89,7 +89,7 @@ mutation.assigned.by.all = function(assignment.tables, raw.data, vector_of_names
   sel = rep(T, nrow(raw.data))
   for (i in 1:length(vector_of_names)) {
     # Don't take into account empty assignment tables, which occurs when a method hasn't pruduced output for a sample
-    if (nrow(assignment.tables[[i]]) > 0) {
+    if (!is.null(assignment.tables[[i]]) & nrow(assignment.tables[[i]]) > 0) {
       sel = sel & (raw.data$Chromosome %in% assignment.tables[[i]][,1] & raw.data$Position %in% assignment.tables[[i]][,2])
     }
   }
