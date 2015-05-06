@@ -19,15 +19,15 @@ source("code/Plotting.R")
 source("code/ArrayAnalysis.R")
 
 
-#morris = parse.mut.assignments(morris_file)
+morris = parse.mut.assignments(morris_file)
 vanloo_wedge = parse.mut.assignments(vanloo_wedge_file)
 peifer = parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters)
 
-#vector_of_names = c("morris", "vanloo_wedge", "peifer")
-#list_of_tables = list(morris, vanloo_wedge, peifer)
+vector_of_names = c("morris", "vanloo_wedge", "peifer")
+list_of_tables = list(morris, vanloo_wedge, peifer)
 
-vector_of_names = c("vanloo_wedge", "peifer")
-list_of_tables = list(vanloo_wedge, peifer)
+# vector_of_names = c("vanloo_wedge", "peifer")
+# list_of_tables = list(vanloo_wedge, peifer)
 
 #######################################################################
 # Get which mutations were assigned by whome

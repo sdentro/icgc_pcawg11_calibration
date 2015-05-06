@@ -43,6 +43,8 @@ parse.dp.input = function(infile) {
 parse.mut.assignments = function(infile) {
   d = read.table(infile, header=T, stringsAsFactors=F)
   d = na.omit(d)
+  d[,1] = as.character(d[,1])
+  d = d[order(d[,1], d[,2]),]
   return(d)
 }
 
