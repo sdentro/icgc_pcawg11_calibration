@@ -5,11 +5,13 @@ args = commandArgs(TRUE)
 # vanloo_wedge_file = "data/vanloo_wedge/2_clustering/0c7af04b-e171-47c4-8be5-5db33f20148e/0c7af04b-e171-47c4-8be5-5db33f20148e_cluster_membership.txt"
 # peifer_file_assignments = "data/peifer/Mutation_Clustering/KICH_0c7af04b_cluster_assignments.txt"
 # peifer_file_clusters = "data/peifer/Mutation_Clustering/KICH_0c7af04b_mclusters.txt"
+# sahinalp_file = "data/sahinalp/citup_pilot63/samples_v1/0c7af04b-e171-47c4-8be5-5db33f20148e_cluster_membership.txt"
 
 morris_file = toString(args[1])
 vanloo_wedge_file = toString(args[2])
 peifer_file_assignments = toString(args[3])
 peifer_file_clusters = toString(args[4])
+sahinalp_file = toString(args[5])
 
 samplename = unlist(strsplit(vanloo_wedge_file, "/"))
 samplename = unlist(strsplit(samplename[length(samplename)], "_"))[1]
@@ -22,9 +24,10 @@ source("code/ArrayAnalysis.R")
 morris = parse.mut.assignments(morris_file)
 vanloo_wedge = parse.mut.assignments(vanloo_wedge_file)
 peifer = parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters)
+sahinalp = parse.mut.assignments(sahinalp_file)
 
-vector_of_names = c("morris", "vanloo_wedge", "peifer")
-list_of_tables = list(morris, vanloo_wedge, peifer)
+vector_of_names = c("morris", "vanloo_wedge", "peifer", "sahinalp")
+list_of_tables = list(morris, vanloo_wedge, peifer, sahinalp)
 
 # vector_of_names = c("vanloo_wedge", "peifer")
 # list_of_tables = list(vanloo_wedge, peifer)
