@@ -63,6 +63,8 @@ get.mut.assigned.by.who = function(master_table, list_of_tables, vector_of_names
       is_assigned = sapply(1:nrow(sub), function(i, sub, num.cols) { !any(is.na(sub[i,3:num.cols])) }, sub=sub, num.cols=num.cols)
       sub = sub[is_assigned,]
       master_table = cbind(master_table, (master_table[,1] %in% sub[,1] & master_table[,2] %in% sub[,2]))
+    } else {
+      master_table = cbind(master_table, rep(F, nrow(master_table)))
     }
   }
   colnames(master_table) = c("Chromosome", "Position", vector_of_names)
