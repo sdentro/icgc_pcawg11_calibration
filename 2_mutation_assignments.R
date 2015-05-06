@@ -147,7 +147,7 @@ sel = mutation.assigned.by.all(list_of_tables, d, vector_of_names)
 
 # Subset the assignment tables using the above selection to get the shared mutations
 dat.shared = sync.assignments(list_of_tables, d, sel, vector_of_names)
-print(length(dat.shared))
+
 # Calculate the identity matrix
 ident.matrices.probs = calc.ident.matrices(dat.shared, vector_of_names, useprobs=T)
 ident.matrices.noprobs = calc.ident.matrices(dat.shared, vector_of_names, useprobs=F)
