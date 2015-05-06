@@ -20,10 +20,29 @@ source("code/Parser.R")
 source("code/Plotting.R")
 source("code/ArrayAnalysis.R")
 
-morris = ifelse(file.exists(morris_file), parse.mut.assignments(morris_file), NULL)
-vanloo_wedge = ifelse(file.exists(vanloo_wedge_file), parse.mut.assignments(vanloo_wedge_file), NULL)
-peifer = ifelse(file.exists(peifer_file_assignments), parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters), NULL)
-sahinalp = ifelse(file.exists(sahinalp_file), parse.mut.assignments(sahinalp_file), NULL)
+if (file.exists(morris_file)) {
+  morris = parse.mut.assignments(morris_file)
+} else {
+  morris = NULL
+}
+
+if (file.exists(vanloo_wedge_file)) {
+  vanloo_wedge = parse.mut.assignments(vanloo_wedge_file)
+} else {
+  vanloo_wedge = NULL
+}
+
+if (file.exists(peifer_file_assignments)) {
+  peifer = parse.mut.assignments.peifer(peifer_file_assignments, peifer_file_clusters)
+} else {
+  peifer = NULL
+}
+
+if (file.exists(sahinalp_file)) {
+  sahinalp = parse.mut.assignments(sahinalp_file)
+} else {
+  sahinalp = NULL
+}
 
 vector_of_names = c("morris", "vanloo_wedge", "peifer", "sahinalp")
 list_of_tables = list(morris, vanloo_wedge, peifer, sahinalp)
