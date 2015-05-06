@@ -5,9 +5,15 @@
 plot.purity.heatmap = function(purity, pngfilename, title) {
   library(ggplot2)
   library(reshape2)
-  purity.m = melt(data.matrix(purity))
+  #purity.m = melt(data.matrix(purity))
+  purity.m = melt(purity, id.vars=c("sample"))
+  purity.m$sample = as.factor(purity.m$sample)
+  purity.m$variable = as.factor(purity.m$variable)
+  purity.m$value = as.numeric(purity.m$value)
+  
   p = ggplot(purity.m) + 
-    aes(Var2, Var1) + 
+    #aes(Var2, Var1) + 
+    aes(sample, variable) +
     geom_tile(aes(fill=value), colour="white") + 
     scale_fill_gradient(low="white", high="steelblue") +
     xlab("Method") + 
