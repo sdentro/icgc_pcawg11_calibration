@@ -89,7 +89,7 @@ mutation.assigned.by.all = function(assignment.tables, raw.data, vector_of_names
   sel = rep(T, nrow(raw.data))
   for (i in 1:length(vector_of_names)) {
     # Don't take into account empty assignment tables, which occurs when a method hasn't pruduced output for a sample
-    if (!is.null(assignment.tables[[i]]) & nrow(assignment.tables[[i]]) > 0) {
+    if (!is.null(assignment.tables[[i]]) && nrow(assignment.tables[[i]]) > 0) {
       sel = sel & (raw.data$Chromosome %in% assignment.tables[[i]][,1] & raw.data$Position %in% assignment.tables[[i]][,2])
     }
   }
@@ -101,7 +101,7 @@ sync.assignments = function(assignment.tables, raw.data, selection, vector_of_na
   dat.shared = list()
   for (i in 1:length(vector_of_names)) {
     dat = assignment.tables[[i]]
-    if (nrow(dat) == 0) {
+    if (is.null(dat) || nrow(dat) == 0) {
       # This happens when a method hasn't produced results for a sample. Reuse the empty data.frame
       dat.shared[[i]] = dat
     } else {
@@ -117,7 +117,7 @@ sync.assignments = function(assignment.tables, raw.data, selection, vector_of_na
 calc.ident.matrices = function(dat.shared, vector_of_names, useprobs=T) {
   ident.matrices = list()
   for (i in 1:length(vector_of_names)) {
-    if (nrow(dat.shared[[i]]) == 0) {
+    if (is.null(dat.shared[[i]]) || nrow(dat.shared[[i]]) == 0) {
       # If there are no mutation assignments available, set the identity matrix to NA
       ident.matrices[[i]] = NULL
     } else {
@@ -218,9 +218,21 @@ for (i in 1:length(vector_of_names)) {
 #######################################################################
 # Save a table with all most likely assignments
 #######################################################################
-most.likely.node.assignments = cbind(dat.shared[[1]][,c(1,2)], most.likely.node.assignments)
-for (i in 2:length(dat.shared)) {
-  most.likely.node.assignments = cbind(most.likely.node.assignments, apply(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)], 1, which.max))
+# If first method hasn't produced assignments, use the second
+if (!is.null(dat.shared[[1]])) {
+	startpoint = 1
+	most.likely.node.assignments = cbind(dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
+} else {
+	startpoint = 2
+	most.likely.node.assignments = cbind(rep(NA, nrow(dat.shared[[startpoint]])), dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
+}
+most.likely.node.assignments = cbind(dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
+for (i in (startpoint+1):length(dat.shared)) {
+  if (!is.null(dat.shared[[i]])) {
+  	most.likely.node.assignments = cbind(most.likely.node.assignments, apply(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)], 1, which.max))
+  } else {
+	  most.likely.node.assignments = cbind(most.likely.node.assignments, rep(NA, nrow(most.likely.node.assignments)))
+  }
 }
 colnames(most.likely.node.assignments) = c("chr", "pos", vector_of_names)
 write.table(most.likely.node.assignments, file=paste("2_mutation_assignments/tables/", samplename, "_most_likely_node_assignments.tsv", sep=""), sep="\t", col.names=T, quote=F, row.names=F)
@@ -233,7 +245,7 @@ get.cluster.locations.shared.muts = function(dat.shared, vector_of_names) {
   mean.cluster.locs = list()
   for (i in 1:length(vector_of_names)) {
     dd = dat.shared[[i]]
-    if (nrow(dd) == 0) {
+    if (is.null(dd) || nrow(dd) == 0) {
       # No clusters available when a method hasn't produced mutation assignments.
       mean.cluster.locs[[i]] = NULL
     } else {
@@ -261,7 +273,11 @@ for (i in 1:length(vector_of_names)) {
 get.cluster.locations.all.muts = function(list_of_tables, raw.data, vector_of_names) {
   mean.cluster.locs = list()
   for (i in 1:length(list_of_tables)) {
-    dd = list_of_tables[[1]]
+    if (!is.null(list_of_tables[[1]])) {
+	    dd = list_of_tables[[1]]
+    } else {
+	    dd = list_of_tables[[2]]
+    }
     selection = d$Chromosome %in% dd[,1] & d$Position %in% dd[,2]
     dd = cbind(dd, d$Subclonal.fraction[selection])
     assignment = apply(d[,3:(ncol(d)-1)], 1, which.max)
