@@ -90,7 +90,10 @@ mutation.assigned.by.all = function(assignment.tables, raw.data, vector_of_names
   for (i in 1:length(vector_of_names)) {
     # Don't take into account empty assignment tables, which occurs when a method hasn't pruduced output for a sample
     if (!is.null(assignment.tables[[i]]) && nrow(assignment.tables[[i]]) > 0) {
-      sel = sel & (raw.data$Chromosome %in% assignment.tables[[i]][,1] & raw.data$Position %in% assignment.tables[[i]][,2])
+	chrpos = paste(raw.data$Chromosome, raw.data$Position)
+        chrpos_method = paste(assignment.tables[[i]][,1], assignment.tables[[i]][,2])
+	sel = sel & chrpos %in% chrpos_method
+      #sel = sel & (raw.data$Chromosome %in% assignment.tables[[i]][,1] & raw.data$Position %in% assignment.tables[[i]][,2])
     }
   }
   return(sel)
@@ -103,11 +106,13 @@ sync.assignments = function(assignment.tables, raw.data, selection, vector_of_na
     dat = assignment.tables[[i]]
     if (is.null(dat) || nrow(dat) == 0) {
       # This happens when a method hasn't produced results for a sample. Reuse the empty data.frame
-      dat.shared[[i]] = dat
+      dat.shared[[i]] = data.frame()
     } else {
-      dat.sel = dat[,1] %in% raw.data$Chromosome[selection] & dat[,2] %in% raw.data$Position[selection]
-      dat.shared[[i]] = dat[dat.sel,]
-      dat.shared[[i]]$Subclonal.fraction = raw.data$Subclonal.fraction[selection]
+	chrpos_method = paste(dat[,1], dat[,2])
+    	chrpos = paste(raw.data$Chromosome[selection], raw.data$Position[selection])
+	dat.sel = chrpos_method %in% chrpos
+        dat.shared[[i]] = dat[dat.sel,]
+        dat.shared[[i]]$Subclonal.fraction = raw.data$Subclonal.fraction[selection]
     }
   }
   return(dat.shared)
@@ -142,7 +147,7 @@ sel = mutation.assigned.by.all(list_of_tables, d, vector_of_names)
 
 # Subset the assignment tables using the above selection to get the shared mutations
 dat.shared = sync.assignments(list_of_tables, d, sel, vector_of_names)
-
+print(length(dat.shared))
 # Calculate the identity matrix
 ident.matrices.probs = calc.ident.matrices(dat.shared, vector_of_names, useprobs=T)
 ident.matrices.noprobs = calc.ident.matrices(dat.shared, vector_of_names, useprobs=F)
@@ -273,22 +278,25 @@ for (i in 1:length(vector_of_names)) {
 get.cluster.locations.all.muts = function(list_of_tables, raw.data, vector_of_names) {
   mean.cluster.locs = list()
   for (i in 1:length(list_of_tables)) {
-    if (!is.null(list_of_tables[[1]])) {
-	    dd = list_of_tables[[1]]
+    dd = dat.shared[[i]]
+    if (is.null(dd) || nrow(dd) == 0) {
+	mean.cluster.locs[[i]] = NULL    
     } else {
-	    dd = list_of_tables[[2]]
+	chrpos = paste(raw.data[,1], raw.data[,2])    
+    	chrpos_method = paste(dd[,1], dd[,2])
+	selection = chrpos %in% chrpos_method
+    	#selection = d$Chromosome %in% dd[,1] & d$Position %in% dd[,2]
+    	dd = cbind(dd, raw.data$Subclonal.fraction[selection])
+    	assignment = apply(dd[,3:(ncol(dd)-1)], 1, which.max)
+    	
+    	mean.subcl.frac = data.frame()
+    	for (cluster in unique(assignment)) {
+    	  cluster.subcl.frac = dd[assignment==cluster, ncol(dd)]
+    	  mean.subcl.frac = rbind(mean.subcl.frac, c(cluster, mean(cluster.subcl.frac), mean(cluster.subcl.frac)+sd(cluster.subcl.frac), sum(assignment==cluster)))
+    	}
+    	colnames(mean.subcl.frac) = c("Cluster", "Subclonal.fraction.mean", "Subclonal.fraction.sd", "Total.muts")
+    	mean.cluster.locs[[i]] = mean.subcl.frac
     }
-    selection = d$Chromosome %in% dd[,1] & d$Position %in% dd[,2]
-    dd = cbind(dd, d$Subclonal.fraction[selection])
-    assignment = apply(d[,3:(ncol(d)-1)], 1, which.max)
-    
-    mean.subcl.frac = data.frame()
-    for (cluster in unique(assignment)) {
-      cluster.subcl.frac = dd[assignment==cluster, ncol(dd)]
-      mean.subcl.frac = rbind(mean.subcl.frac, c(cluster, mean(cluster.subcl.frac), mean(cluster.subcl.frac)+sd(cluster.subcl.frac), sum(assignment==cluster)))
-    }
-    colnames(mean.subcl.frac) = c("Cluster", "Subclonal.fraction.mean", "Subclonal.fraction.sd", "Total.muts")
-    mean.cluster.locs[[i]] = mean.subcl.frac
   }
   return(mean.cluster.locs)
 }
