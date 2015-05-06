@@ -124,7 +124,7 @@ calc.ident.matrices = function(dat.shared, vector_of_names, useprobs=T) {
   for (i in 1:length(vector_of_names)) {
     if (is.null(dat.shared[[i]]) || nrow(dat.shared[[i]]) == 0) {
       # If there are no mutation assignments available, set the identity matrix to NA
-      ident.matrices[[i]] = NULL
+      ident.matrices[[i]] = data.frame()
     } else {
       #ident.matrices[[i]] = GetIdentityArrayFromAssignments(dat.shared[[i]]$Cluster)
       if (useprobs) {
@@ -159,7 +159,7 @@ ident.matrices.noprobs = calc.ident.matrices(dat.shared, vector_of_names, usepro
 diff.mse = matrix(0, length(vector_of_names), length(vector_of_names))
 for (i in 1:length(vector_of_names)) {
   for (j in i:length(vector_of_names)) {
-    if (!is.null(ident.matrices.probs[[i]]) & !is.null(ident.matrices.probs[[j]])) {
+    if (nrow(ident.matrices.probs[[i]]) > 0 & nrow(ident.matrices.probs[[j]]) > 0) {
       diff.mse[i, j] = mean((ident.matrices.probs[[i]] - ident.matrices.probs[[j]])^2)
     } else {
       diff.mse[i, j] = NA
@@ -174,7 +174,7 @@ write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", sampl
 diff.mse = matrix(0, length(vector_of_names), length(vector_of_names))
 for (i in 1:length(vector_of_names)) {
   for (j in i:length(vector_of_names)) {
-    if (!is.null(ident.matrices.noprobs[[i]]) & !is.null(ident.matrices.noprobs[[j]])) {
+    if (nrow(ident.matrices.noprobs[[i]]) > 0 & nrow(ident.matrices.noprobs[[j]]) > 0) {
       diff.mse[i, j] = mean((ident.matrices.noprobs[[i]] - ident.matrices.noprobs[[j]])^2)
     } else {
       diff.mse[i, j] = NA
@@ -188,7 +188,7 @@ write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", sampl
 #######################################################################
 # Plot a heatmap with data ordered according to the first method, if no results use the second
 #######################################################################
-if (!is.null(dat.shared[[1]])) {
+if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
   most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
   ord = order(most.likely.node.assignments)
 } else {
@@ -199,7 +199,7 @@ if (!is.null(dat.shared[[1]])) {
 # No probabilities
 for (i in 1:length(vector_of_names)) {
   # Only plot heatmap when there is a matrix, i.e. when a method has produced mutation assignments for this sample
-  if (!is.null(ident.matrices.noprobs[[i]])) {
+  if (!is.null(ident.matrices.noprobs[[i]]) & nrow(ident.matrices.noprobs[[i]]) > 0) {
     if (nrow(ident.matrices.noprobs[[i]]) < 10000) {
       plotHeatmapFull(ident.matrices.noprobs[[i]][ord,ord], paste("2_mutation_assignments/figures/", samplename, "_", vector_of_names[i], "_noprobs.png", sep=""))
     } else {
@@ -211,7 +211,7 @@ for (i in 1:length(vector_of_names)) {
 # Probabilities
 for (i in 1:length(vector_of_names)) {
   # Only plot heatmap when there is a matrix, i.e. when a method has produced mutation assignments for this sample
-  if (!is.null(ident.matrices.probs[[i]])) {
+  if (!is.null(ident.matrices.probs[[i]]) & nrow(ident.matrices.probs[[i]]) > 0) {
     if (nrow(ident.matrices.probs[[i]]) < 10000) {
       plotHeatmapFull(ident.matrices.probs[[i]][ord,ord], paste("2_mutation_assignments/figures/", samplename, "_", vector_of_names[i], "_probs.png", sep=""))
     } else {
@@ -219,12 +219,11 @@ for (i in 1:length(vector_of_names)) {
     }
   }
 }
-
 #######################################################################
 # Save a table with all most likely assignments
 #######################################################################
 # If first method hasn't produced assignments, use the second
-if (!is.null(dat.shared[[1]])) {
+if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
 	startpoint = 1
 	most.likely.node.assignments = cbind(dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
 } else {
