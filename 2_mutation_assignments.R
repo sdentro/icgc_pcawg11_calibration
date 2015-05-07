@@ -1,11 +1,11 @@
 args = commandArgs(TRUE)
 
 # samplename = "0c7af04b-e171-47c4-8be5-5db33f20148e"
-# morris_file = "data/morris/mutation_assignment/mutation_assignment.all.0c7af04b-e171-47c4-8be5-5db33f20148e.csv"
-# vanloo_wedge_file = "data/vanloo_wedge/2_clustering/0c7af04b-e171-47c4-8be5-5db33f20148e/0c7af04b-e171-47c4-8be5-5db33f20148e_cluster_membership.txt"
-# peifer_file_assignments = "data/peifer/Mutation_Clustering/KICH_0c7af04b_cluster_assignments.txt"
-# peifer_file_clusters = "data/peifer/Mutation_Clustering/KICH_0c7af04b_mclusters.txt"
-# sahinalp_file = "data/sahinalp/citup_pilot63/samples_v1/0c7af04b-e171-47c4-8be5-5db33f20148e_cluster_membership.txt"
+# morris_file = paste("data/morris/mutation_assignment/mutation_assignment.all.", samplename, ".csv", sep="")
+# vanloo_wedge_file = paste("data/vanloo_wedge/2_clustering/", samplename, "/", samplename, "_cluster_membership.txt", sep="")
+# peifer_file_assignments = "data/peifer/Mutation_Clustering/ESAD_293a2f0a_cluster_assignments.txt"
+# peifer_file_clusters = "data/peifer/Mutation_Clustering/ESAD_293a2f0a_mclusters.txt"
+# sahinalp_file = paste("data/sahinalp/citup_pilot63/samples_v1/", samplename, "_cluster_membership.txt", sep="")
 
 morris_file = toString(args[1])
 vanloo_wedge_file = toString(args[2])
@@ -188,6 +188,7 @@ write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", sampl
 #######################################################################
 # Plot a heatmap with data ordered according to the first method, if no results use the second
 #######################################################################
+print("before")
 if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
   most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
   ord = order(most.likely.node.assignments)
@@ -222,6 +223,7 @@ for (i in 1:length(vector_of_names)) {
 #######################################################################
 # Save a table with all most likely assignments
 #######################################################################
+print("after")
 # If first method hasn't produced assignments, use the second
 if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
 	startpoint = 1
@@ -230,9 +232,9 @@ if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
 	startpoint = 2
 	most.likely.node.assignments = cbind(rep(NA, nrow(dat.shared[[startpoint]])), dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
 }
-most.likely.node.assignments = cbind(dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
+#most.likely.node.assignments = cbind(dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
 for (i in (startpoint+1):length(dat.shared)) {
-  if (!is.null(dat.shared[[i]])) {
+  if (!is.null(dat.shared[[i]]) & nrow(dat.shared[[i]]) > 0) {
   	most.likely.node.assignments = cbind(most.likely.node.assignments, apply(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)], 1, which.max))
   } else {
 	  most.likely.node.assignments = cbind(most.likely.node.assignments, rep(NA, nrow(most.likely.node.assignments)))
