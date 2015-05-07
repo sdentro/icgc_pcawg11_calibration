@@ -188,7 +188,6 @@ write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", sampl
 #######################################################################
 # Plot a heatmap with data ordered according to the first method, if no results use the second
 #######################################################################
-print("before")
 if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
   most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
   ord = order(most.likely.node.assignments)
@@ -223,7 +222,6 @@ for (i in 1:length(vector_of_names)) {
 #######################################################################
 # Save a table with all most likely assignments
 #######################################################################
-print("after")
 # If first method hasn't produced assignments, use the second
 if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
 	startpoint = 1
@@ -253,7 +251,7 @@ get.cluster.locations.shared.muts = function(dat.shared, vector_of_names) {
     dd = dat.shared[[i]]
     if (is.null(dd) || nrow(dd) == 0) {
       # No clusters available when a method hasn't produced mutation assignments.
-      mean.cluster.locs[[i]] = NULL
+      mean.cluster.locs[[i]] = data.frame()
     } else {
       assignment = apply(dd[,3:(ncol(dd)-1)], 1, which.max)
       mean.subcl.frac = data.frame()
@@ -270,7 +268,7 @@ get.cluster.locations.shared.muts = function(dat.shared, vector_of_names) {
 
 cluster.locations = get.cluster.locations.shared.muts(dat.shared, vector_of_names)
 for (i in 1:length(vector_of_names)) {
-  if (!is.null(cluster.locations[[i]])) {
+  if (!is.null(cluster.locations[[i]]) & nrow(cluster.locations[[i]]) > 0) {
     write.table(file=paste("2_mutation_assignments/tables/", samplename, "_cluster_locations_shared_", vector_of_names[i], ".txt", sep=""), cluster.locations[[i]], row.names=F, quote=F, sep="\t")
   }
 }
@@ -281,7 +279,7 @@ get.cluster.locations.all.muts = function(list_of_tables, raw.data, vector_of_na
   for (i in 1:length(list_of_tables)) {
     dd = dat.shared[[i]]
     if (is.null(dd) || nrow(dd) == 0) {
-	mean.cluster.locs[[i]] = NULL    
+	mean.cluster.locs[[i]] = data.frame()
     } else {
 	chrpos = paste(raw.data[,1], raw.data[,2])    
     	chrpos_method = paste(dd[,1], dd[,2])
@@ -304,7 +302,7 @@ get.cluster.locations.all.muts = function(list_of_tables, raw.data, vector_of_na
 
 cluster.locations = get.cluster.locations.all.muts(list_of_tables, d, vector_of_names)
 for (i in 1:length(vector_of_names)) {
-  if (!is.null(cluster.locations[[i]])) {
+  if (!is.null(cluster.locations[[i]]) & nrow(cluster.locations[[i]]) > 0) {
     write.table(file=paste("2_mutation_assignments/tables/", samplename, "_cluster_locations_all_", vector_of_names[i], ".txt", sep=""), cluster.locations[[i]], row.names=F, quote=F, sep="\t")
   }
 }
