@@ -1,6 +1,6 @@
 args = commandArgs(TRUE)
 
-# samplename = "0c7af04b-e171-47c4-8be5-5db33f20148e"
+# samplename = "569393c8-e2fe-4580-a45b-81f1b1e01135"
 # morris_file = paste("data/morris/mutation_assignment/mutation_assignment.all.", samplename, ".csv", sep="")
 # vanloo_wedge_file = paste("data/vanloo_wedge/2_clustering/", samplename, "/", samplename, "_cluster_membership.txt", sep="")
 # peifer_file_assignments = "data/peifer/Mutation_Clustering/ESAD_293a2f0a_cluster_assignments.txt"
@@ -131,7 +131,12 @@ calc.ident.matrices = function(dat.shared, vector_of_names, useprobs=T) {
         # Select the columns from dat.shared (no chr/pos and CCF)
         ident.matrices[[i]] = GetIdentityArrayFromProbabilities(as.matrix(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)]))
       } else {
-        most.likely.node.assignments = unlist(apply(dat.shared[[i]][,3:(ncol(dat.shared[[i]])-1)], 1, which.max))
+	cols_select = 3:(ncol(dat.shared[[i]])-1)
+	if (length(cols_select) == 1) {
+		most.likely.node.assignments = rep(1, nrow(dat.shared[[i]]))
+	} else {
+        	most.likely.node.assignments = unlist(apply(dat.shared[[i]][,cols_select], 1, which.max))
+	}
         ident.matrices[[i]] = GetIdentityArrayFromAssignments(most.likely.node.assignments)
       }
     }
@@ -189,12 +194,30 @@ write.table(diff.mse.d, file=paste("2_mutation_assignments/similarities/", sampl
 # Plot a heatmap with data ordered according to the first method, if no results use the second
 #######################################################################
 if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
-  most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
-  ord = order(most.likely.node.assignments)
+  cols_select = 3:(ncol(dat.shared[[1]])-1)
+  if (length(cols_select) == 1) { 
+	  most.likely.node.assignments = rep(1, nrow(dat.shared[[1]]))
+  } else {
+  	most.likely.node.assignments = apply(dat.shared[[1]][,3:(ncol(dat.shared[[1]])-1)], 1, which.max)
+  }
+} else if(!is.null(dat.shared[[2]]) & nrow(dat.shared[[2]]) > 0) {
+  cols_select = 3:(ncol(dat.shared[[2]])-1)
+  if (length(cols_select) == 1) {
+	  most.likely.node.assignments = rep(1, nrow(dat.shared[[2]]))
+  } else {
+	most.likely.node.assignments = apply(dat.shared[[2]][,3:(ncol(dat.shared[[2]])-1)], 1, which.max)
+  }
 } else {
-  most.likely.node.assignments = apply(dat.shared[[2]][,3:(ncol(dat.shared[[2]])-1)], 1, which.max)
-  ord = order(most.likely.node.assignments)
+  cols_select = 3:(ncol(dat.shared[[3]])-1)
+  if (length(cols_select) == 1) {
+	  most.likely.node.assignments = rep(1, nrow(dat.shared[[3]]))
+  } else {
+	  most.likely.node.assignments = apply(dat.shared[[3]][,3:(ncol(dat.shared[[3]])-1)], 1, which.max)
+  }
 }
+
+ord = order(most.likely.node.assignments)
+
 
 # No probabilities
 for (i in 1:length(vector_of_names)) {
@@ -226,10 +249,14 @@ for (i in 1:length(vector_of_names)) {
 if (!is.null(dat.shared[[1]]) & nrow(dat.shared[[1]]) > 0) {
 	startpoint = 1
 	most.likely.node.assignments = cbind(dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
-} else {
+} else if (!is.null(dat.shared[[2]]) & nrow(dat.shared[[2]]) > 0) {
 	startpoint = 2
 	most.likely.node.assignments = cbind(rep(NA, nrow(dat.shared[[startpoint]])), dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
+} else {
+	startpoint = 3
+	most.likely.node.assignments = cbind(rep(NA, nrow(dat.shared[[startpoint]])), rep(NA, nrow(dat.shared[[startpoint]])), dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
 }
+
 #most.likely.node.assignments = cbind(dat.shared[[startpoint]][,c(1,2)], most.likely.node.assignments)
 for (i in (startpoint+1):length(dat.shared)) {
   if (!is.null(dat.shared[[i]]) & nrow(dat.shared[[i]]) > 0) {
@@ -253,7 +280,12 @@ get.cluster.locations.shared.muts = function(dat.shared, vector_of_names) {
       # No clusters available when a method hasn't produced mutation assignments.
       mean.cluster.locs[[i]] = data.frame()
     } else {
-      assignment = apply(dd[,3:(ncol(dd)-1)], 1, which.max)
+      cols_select = 3:(ncol(dd)-1)
+      if (length(cols_select) == 1) {
+	assignment = rep(1, nrow(dd))
+      } else {
+      	assignment = apply(dd[,cols_select], 1, which.max)
+      }
       mean.subcl.frac = data.frame()
       for (cluster in unique(assignment)) {
         cluster.subcl.frac = dd$Subclonal.fraction[assignment==cluster]
@@ -286,7 +318,12 @@ get.cluster.locations.all.muts = function(list_of_tables, raw.data, vector_of_na
 	selection = chrpos %in% chrpos_method
     	#selection = d$Chromosome %in% dd[,1] & d$Position %in% dd[,2]
     	dd = cbind(dd, raw.data$Subclonal.fraction[selection])
-    	assignment = apply(dd[,3:(ncol(dd)-1)], 1, which.max)
+	cols_select = 3:(ncol(dd)-1)
+	if (length(cols_select) == 1) {
+		assignment = rep(1, nrow(dd))
+	} else {
+    		assignment = apply(dd[,cols_select], 1, which.max)
+	}
     	
     	mean.subcl.frac = data.frame()
     	for (cluster in unique(assignment)) {
