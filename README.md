@@ -11,8 +11,12 @@ ICGC PCAWG-11 Calibration code for subclonal architecture
 			data/peifer/Mutation_Clustering/*${sample_short}_mclusters.txt \
 			data/sahinalp/citup_pilot63/samples_v1/${sample}_cluster_membership.txt
 
+## Dependencies - R packages
+		Matrix
+		RColorBrewer
 
-## Directory structure
+
+## Expected directory structure
 
 		|-- 1_purity_ploidy
 		|-- 2_mutation_assignments
